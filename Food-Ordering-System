@@ -1,5 +1,3 @@
-Food-Ordering-System in Java
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -25,6 +23,10 @@ public class FoodOrderingSystem {
         // Take order
         while (true) {
             System.out.print("Enter item number (0 to checkout): ");
+            while (!scanner.hasNextInt()) {
+                System.out.println("Invalid input! Please enter a number.");
+                scanner.next();
+            }
             int itemNumber = scanner.nextInt();
 
             if (itemNumber == 0) {
@@ -39,6 +41,10 @@ public class FoodOrderingSystem {
             MenuItem menuItem = menuItems.get(itemNumber - 1);
 
             System.out.print("Enter quantity: ");
+            while (!scanner.hasNextInt()) {
+                System.out.println("Invalid input! Please enter a number.");
+                scanner.next();
+            }
             int quantity = scanner.nextInt();
 
             OrderItem orderItem = new OrderItem(menuItem, quantity);
@@ -60,21 +66,31 @@ public class FoodOrderingSystem {
         }
         System.out.println("Total: $" + total);
 
-         // Payment
+        // Payment
         System.out.println("\nSelect payment method:");
         System.out.println("1. Cash");
         System.out.println("2. Online Banking");
         System.out.println("3. Card");
         System.out.print("Enter payment method number: ");
+        while (!scanner.hasNextInt()) {
+            System.out.println("Invalid input! Please enter a number.");
+            scanner.next();
+        }
         int paymentMethod = scanner.nextInt();
 
         String paymentMethodString;
         switch (paymentMethod) {
             case 1:
                 paymentMethodString = "Cash On Delivery";
+                CashOnDeliveryThread cashOnDeliveryThread = new CashOnDeliveryThread();
+                cashOnDeliveryThread.start();
+                cashOnDeliveryThread.join();
                 break;
             case 2:
                 paymentMethodString = "Online Payment";
+                OnlinePaymentThread onlinePaymentThread = new OnlinePaymentThread();
+                onlinePaymentThread.start();
+                onlinePaymentThread.join();
                 break;
             case 3:
                 paymentMethodString = "Card";
@@ -87,11 +103,6 @@ public class FoodOrderingSystem {
         System.out.println("Selected payment method: " + paymentMethodString);
 
 
-        // Start payment thread
-        PaymentThread paymentThread = new PaymentThread();
-        paymentThread.start();
-        paymentThread.join();
-        
         // Start food preparation threads
         for (OrderItem orderItem : orderItems) {
             FoodOrderThread foodOrderThread = new FoodOrderThread(orderItem);
@@ -105,14 +116,14 @@ public class FoodOrderingSystem {
             foodOrderThread.join();
         }
 
-        
+
         // Start delivery thread
         DeliveryThread deliveryThread = new DeliveryThread();
         deliveryThread.start();
         deliveryThread.join();
 
         System.out.println("Order delivered successfully!");
-        
+
         // Prompt for feedback
         scanner.nextLine(); // Consume the remaining newline character
         System.out.print("\nPlease provide your feedback: ");
@@ -124,128 +135,132 @@ public class FoodOrderingSystem {
 
         System.out.println("Thank you for your feedback!");
 
-
-}
-
-static class MenuItem {
-private String name;
-private double price;
-public MenuItem(String name, double price) {
-    this.name = name;
-    this.price = price;
-}
-
-public String getName() {
-    return name;
-}
-
-public double getPrice() {
-    return price;
- }
-}
-
-static class OrderItem {
-private MenuItem menuItem;
-private int quantity;
-private FoodOrderThread foodOrderThread;
-public OrderItem(MenuItem menuItem, int quantity) {
-    this.menuItem = menuItem;
-    this.quantity = quantity;
-}
-
-public MenuItem getMenuItem() {
-    return menuItem;
-}
-
-public int getQuantity() {
-    return quantity;
-}
-
-public double getTotalPrice() {
-    return quantity * menuItem.getPrice();
-}
-
-public FoodOrderThread getFoodOrderThread() {
-    return foodOrderThread;
-}
-
-public void setFoodOrderThread(FoodOrderThread foodOrderThread) {
-    this.foodOrderThread = foodOrderThread;
- }
-}
-
-static class FoodOrderThread extends Thread {
-private OrderItem orderItem;
-public FoodOrderThread(OrderItem orderItem) {
-    this.orderItem = orderItem;
-}
-
-public void run() {
-    System.out.println("\nPreparing " + orderItem.getQuantity() + " " + orderItem.getMenuItem().getName() + "(s)...");
-    try {
-        // Simulate food preparation time
-        Thread.sleep(2000);
-    } catch (InterruptedException e) {
-        e.printStackTrace();
     }
-    System.out.println(orderItem.getQuantity() + " " + orderItem.getMenuItem().getName() + "(s) are ready!");
-}
-}
 
-static class OnlinePaymentThread extends Thread {
-public void run() {
-System.out.println("Processing online payment...");
-try {
-// Simulate payment processing time
-Thread.sleep(3000);
-} catch (InterruptedException e) {
-e.printStackTrace();
-}
-System.out.println("Online payment processed successfully!");
-}
-}
+    static class MenuItem {
+        private String name;
+        private double price;
 
-static class CashOnDeliveryThread extends Thread {
-public void run() {
-System.out.println("Preparing for cash on delivery...");
-try {
-// Simulate preparation time
-Thread.sleep(2000);
-} catch (InterruptedException e) {
-e.printStackTrace();
-}
-System.out.println("Cash on delivery is ready!");
-}
-}
+        public MenuItem(String name, double price) {
+            this.name = name;
+            this.price = price;
+        }
 
-static class FeedbackThread extends Thread {
-private String feedback;
-public FeedbackThread(String feedback) {
-    this.feedback = feedback;
-}
+        public String getName() {
+            return name;
+        }
 
-public void run() {
-    System.out.println("Submitting feedback...");
-    try {
-        // Simulate feedback submission time
-        Thread.sleep(1000);
-    } catch (InterruptedException e) {
-        e.printStackTrace();
+        public double getPrice() {
+            return price;
+        }
     }
-    System.out.println("Feedback submitted: " + feedback);
-}
-}
 
-static class DeliveryThread extends Thread {
-@Override
-public void run() {
-System.out.println("\nDelivering order...");
-try {
-// Simulate delivery time
-Thread.sleep(3000);
-} catch (InterruptedException e) {
-e.printStackTrace();
-}
-System.out.println("Order delivered!");
-}
+    static class OrderItem {
+        private MenuItem menuItem;
+        private int quantity;
+        private FoodOrderThread foodOrderThread;
+
+        public OrderItem(MenuItem menuItem, int quantity) {
+            this.menuItem = menuItem;
+            this.quantity = quantity;
+        }
+
+        public MenuItem getMenuItem() {
+            return menuItem;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+
+        public double getTotalPrice() {
+            return quantity * menuItem.getPrice();
+        }
+
+        public FoodOrderThread getFoodOrderThread() {
+            return foodOrderThread;
+        }
+
+        public void setFoodOrderThread(FoodOrderThread foodOrderThread) {
+            this.foodOrderThread = foodOrderThread;
+        }
+    }
+
+    static class FoodOrderThread extends Thread {
+        private OrderItem orderItem;
+
+        public FoodOrderThread(OrderItem orderItem) {
+            this.orderItem = orderItem;
+        }
+
+        public void run() {
+            System.out.println("\nPreparing " + orderItem.getQuantity() + " " + orderItem.getMenuItem().getName() + "(s)...");
+            try {
+                // Simulate food preparation time
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(orderItem.getQuantity() + " " + orderItem.getMenuItem().getName() + "(s) are ready!");
+        }
+    }
+
+    static class OnlinePaymentThread extends Thread {
+        public void run() {
+            System.out.println("Processing online payment...");
+            try {
+                // Simulate payment processing time
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Online payment processed successfully!");
+        }
+    }
+
+    static class CashOnDeliveryThread extends Thread {
+        public void run() {
+            System.out.println("Preparing for cash on delivery...");
+            try {
+                // Simulate preparation time
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Cash on delivery is ready!");
+        }
+    }
+
+    static class FeedbackThread extends Thread {
+        private String feedback;
+
+        public FeedbackThread(String feedback) {
+            this.feedback = feedback;
+        }
+
+        public void run() {
+            System.out.println("Submitting feedback...");
+            try {
+                // Simulate feedback submission time
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Feedback submitted: " + feedback);
+        }
+    }
+
+    static class DeliveryThread extends Thread {
+        @Override
+        public void run() {
+            System.out.println("\nDelivering order...");
+            try {
+                // Simulate delivery time
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Order delivered!");
+        }
+    }
 }
